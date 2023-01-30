@@ -1095,7 +1095,7 @@ void Adafruit_GFX::drawGrayscaleBitmap(int16_t x, int16_t y, uint8_t *bitmap,
     @param    h   Height of bitmap in pixels
 */
 /**************************************************************************/
-void Adafruit_GFX::drawGrayscaleBitmap(int16_t x, int16_t y, uint8_t *bitmap, uint8_t matte int16_t w, int16_t h)
+void Adafruit_GFX::drawGrayscaleBitmap(int16_t x, int16_t y, uint8_t *bitmap, uint8_t matte, int16_t w, int16_t h)
 {
   startWrite();
   for (int16_t j = 0; j < h; j++, y++)
