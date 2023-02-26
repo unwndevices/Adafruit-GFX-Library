@@ -1109,6 +1109,58 @@ void Adafruit_GFX::drawGrayscaleBitmap(int16_t x, int16_t y, uint8_t *bitmap, ui
   }
   endWrite();
 }
+/**************************************************************************/
+/*!
+   @brief   Draw a RAM-resident 8-bit image (grayscale) at the specified (x,y)
+   pos. Specifically for 8-bit display devices such as IS31FL3731; no color
+   reduction/expansion is performed.
+    @param    x   Top left corner x coordinate
+    @param    y   Top left corner y coordinate
+    @param    bitmap  byte array with grayscale bitmap
+    @param    w   Width of bitmap in pixels
+    @param    h   Height of bitmap in pixels
+*/
+/**************************************************************************/
+void Adafruit_GFX::drawGrayscaleBitmap(int16_t x, int16_t y, bool *bitmap,
+                                       int16_t w, int16_t h)
+{
+  startWrite();
+  for (int16_t j = 0; j < h; j++, y++)
+  {
+    for (int16_t i = 0; i < w; i++)
+    {
+      writePixel(x + i, y, bitmap[j * w + i] * 0xf);
+    }
+  }
+  endWrite();
+}
+/**************************************************************************/
+/*!
+   @brief   Draw a RAM-resident 8-bit image (grayscale) at the specified (x,y)
+   pos. Specifically for 8-bit display devices such as IS31FL3731; no color
+   reduction/expansion is performed.
+    @param    x   Top left corner x coordinate
+    @param    y   Top left corner y coordinate
+    @param    bitmap  byte array with grayscale bitmap
+    @param    matte   Color to use as matte for trasparency
+    @param    w   Width of bitmap in pixels
+    @param    h   Height of bitmap in pixels
+*/
+/**************************************************************************/
+void Adafruit_GFX::drawGrayscaleBitmap(int16_t x, int16_t y, bool *bitmap, uint8_t matte, int16_t w, int16_t h)
+{
+  startWrite();
+  for (int16_t j = 0; j < h; j++, y++)
+  {
+    for (int16_t i = 0; i < w; i++)
+    {
+      uint8_t color = bitmap[j * w + i];
+      if (color != matte)
+        writePixel(x + i, y, color * 0xf);
+    }
+  }
+  endWrite();
+}
 
 /**************************************************************************/
 /*!
