@@ -1858,6 +1858,14 @@ void Adafruit_GFX::getTextBounds(const __FlashStringHelper *str, int16_t x,
   }
 }
 
+uint16_t Adafruit_GFX::getTextWidth(const String &str)
+{
+  int16_t x1, y1 = 0;
+  uint16_t w, h = 0;
+  getTextBounds(str, 0, 0, &x1, &y1, &w, &h);
+  return w;
+}
+
 /**************************************************************************/
 /*!
     @brief      Invert the display (ideally using built-in hardware command)
@@ -2630,7 +2638,7 @@ void GFXcanvas8::fillScreen(uint16_t color)
   }
 }
 
-/**************************************************************************/
+/*************************************************************************/
 /*!
    @brief  Speed optimized vertical line drawing
    @param  x      Line horizontal start point
@@ -3163,6 +3171,15 @@ void GFXcanvas8::add(GFXcanvas8 *canvas, GFXcanvas8 *over)
   }
 }
 
+void GFXcanvas8::add(const uint8_t over[])
+{
+  uint8_t *_canvas = this->getBuffer();
+  for (int i = 0; i < this->width() * this->width(); i++)
+  {
+    _canvas[i] = constrain(_canvas[i] + over[i], 0, 15);
+  }
+  }
+
 void GFXcanvas8::subtract(GFXcanvas8 *canvas, GFXcanvas8 *over)
 {
   uint8_t *_canvas = canvas->getBuffer();
@@ -3172,6 +3189,16 @@ void GFXcanvas8::subtract(GFXcanvas8 *canvas, GFXcanvas8 *over)
     _canvas[i] = constrain(_canvas[i] - _over[i], 0, 15);
   }
 }
+
+void GFXcanvas8::subtract(const uint8_t over[])
+{
+  uint8_t *_canvas = this->getBuffer();
+  for (int i = 0; i < this->width() * this->width(); i++)
+  {
+    _canvas[i] = constrain(_canvas[i] - over[i], 0, 15);
+  }
+}
+
 void GFXcanvas8::over(GFXcanvas8 *canvas, GFXcanvas8 *over, uint8_t matte)
 {
   uint8_t *_canvas = canvas->getBuffer();

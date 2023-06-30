@@ -1,5 +1,5 @@
-#ifndef _ADAFRUIT_GFX_H
-#define _ADAFRUIT_GFX_H
+#ifndef ADAFRUIT_GFX_H
+#define ADAFRUIT_GFX_H
 
 #if ARDUINO >= 100
 #include "Arduino.h"
@@ -74,6 +74,7 @@ public:
   void fillCircle(int16_t x0, int16_t y0, int16_t r, uint16_t color);
   void fillCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername,
                         int16_t delta, uint16_t color);
+
   void drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2,
                     int16_t y2, uint16_t color);
   void fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2,
@@ -123,6 +124,7 @@ public:
                      int16_t *x1, int16_t *y1, uint16_t *w, uint16_t *h);
   void getTextBounds(const String &str, int16_t x, int16_t y, int16_t *x1,
                      int16_t *y1, uint16_t *w, uint16_t *h);
+  uint16_t getTextWidth(const String &str);
   void setTextSize(uint8_t s);
   void setTextSize(uint8_t sx, uint8_t sy);
   void setFont(const GFXfont *f = NULL);
@@ -237,6 +239,27 @@ public:
   /************************************************************************/
   int16_t getCursorY(void) const { return cursor_y; };
 
+  ///////////////////////////////////////////////////////////////////////////////
+
+  void fillRectWithPattern(int16_t x, int16_t y, int16_t w, int16_t h, uint8_t *pattern, int16_t patternWidth, int16_t patternHeight)
+  {
+    for (int16_t i = 0; i < w; i++)
+    {
+      for (int16_t j = 0; j < h; j++)
+      {
+        // Calculate the corresponding pixel in the pattern
+        int16_t patternX = i % patternWidth;
+        int16_t patternY = j % patternHeight;
+
+        // Get the color from the pattern
+        uint16_t color = pattern[patternY * patternWidth + patternX];
+
+        // Draw the pixel
+        drawPixel(x + i, y + j, color);
+      }
+    }
+  }
+
 protected:
   void charBounds(unsigned char c, int16_t *x, int16_t *y, int16_t *minx,
                   int16_t *miny, int16_t *maxx, int16_t *maxy);
@@ -345,7 +368,7 @@ private:
 #ifdef __AVR__
   // Bitmask tables of 0x80>>X and ~(0x80>>X), because X>>Y is slow on AVR
   static const uint8_t PROGMEM GFXsetBit[], GFXclrBit[];
-#endif
+#endif // ADAFRUIT_GFX_H
 };
 
 /// A GFX 8-bit canvas context for graphics
@@ -368,8 +391,11 @@ public:
   uint8_t *getBuffer(void) const { return buffer; }
 
   void add(GFXcanvas8 *canvas, GFXcanvas8 *over);
+  void add(const uint8_t over[]);
   void subtract(GFXcanvas8 *canvas, GFXcanvas8 *over);
-  void over(GFXcanvas8 *canvas, GFXcanvas8 *over, uint8_t matte = 0);
+  void subtract(const uint8_t over[]);
+  void over(GFXcanvas8 *canvas, GFXcanvas8 *over, uint8_t matte = 16U);
+  void over(const uint8_t over[], uint8_t matte = 16U);
 
 protected:
   uint8_t getRawPixel(int16_t x, int16_t y) const;
@@ -405,4 +431,4 @@ protected:
   uint16_t *buffer; ///< Raster data: no longer private, allow subclass access
 };
 
-#endif // _ADAFRUIT_GFX_H
+#endif // ADAFRUIT_GFX_H
