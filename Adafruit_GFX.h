@@ -252,10 +252,37 @@ public:
         int16_t patternY = j % patternHeight;
 
         // Get the color from the pattern
-        uint16_t color = pattern[patternY * patternWidth + patternX];
+        uint8_t color = pattern[patternY * patternWidth + patternX];
 
         // Draw the pixel
         drawPixel(x + i, y + j, color);
+      }
+    }
+  }
+
+  void drawDottedLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color, uint16_t dotLength = 1, uint16_t spaceLength = 1)
+  {
+    float dx = x1 - x0;
+    float dy = y1 - y0;
+    float len = sqrt(dx * dx + dy * dy);
+    float dotSpaceLength = dotLength + spaceLength;
+
+    // Normalize differences
+    dx /= len;
+    dy /= len;
+
+    uint16_t drawn = 0; // The length of what has been drawn
+
+    for (uint16_t i = 0; i < len; i += dotSpaceLength)
+    {
+      for (uint16_t j = 0; j < dotLength; j++)
+      {
+        if (i + j >= len)
+          break; // If the dot is not complete
+
+        int16_t x = x0 + dx * (i + j);
+        int16_t y = y0 + dy * (i + j);
+        drawPixel(x, y, color);
       }
     }
   }

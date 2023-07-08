@@ -1195,7 +1195,10 @@ void Adafruit_GFX::drawGrayscaleBitmap(int16_t x, int16_t y,
         b = pgm_read_byte(&mask[j * bw + i / 8]);
       if (b & 0x80)
       {
-        writePixel(x + i, y, (uint8_t)pgm_read_byte(&bitmap[j * w + i]));
+        if (bitmap[j * w + i] != 16U)
+        {
+          writePixel(x + i, y, (uint8_t)pgm_read_byte(&bitmap[j * w + i]));
+        }
       }
     }
   }
@@ -1233,7 +1236,10 @@ void Adafruit_GFX::drawGrayscaleBitmap(int16_t x, int16_t y, uint8_t *bitmap,
         b = mask[j * bw + i / 8];
       if (b & 0x80)
       {
-        writePixel(x + i, y, bitmap[j * w + i]);
+        if (bitmap[j * w + i] != 16U)
+        {
+          writePixel(x + i, y, bitmap[j * w + i]);
+        }
       }
     }
   }
@@ -3178,7 +3184,7 @@ void GFXcanvas8::add(const uint8_t over[])
   {
     _canvas[i] = constrain(_canvas[i] + over[i], 0, 15);
   }
-  }
+}
 
 void GFXcanvas8::subtract(GFXcanvas8 *canvas, GFXcanvas8 *over)
 {
