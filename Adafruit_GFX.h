@@ -97,6 +97,7 @@ public:
   void drawGrayscaleBitmap(int16_t x, int16_t y, const bool bitmap[], bool matte, int16_t w, int16_t h);
   void drawGrayscaleBitmap(int16_t x, int16_t y, const uint8_t bitmap[], int16_t w, int16_t h);
   void drawGrayscaleBitmap(int16_t x, int16_t y, const uint8_t bitmap[], uint8_t matte, int16_t w, int16_t h);
+  void drawGrayscaleBitmap(int16_t x, int16_t y, const uint8_t bitmap[], uint8_t matte, int16_t w, int16_t h, uint8_t opacity);
   void drawGrayscaleBitmap(int16_t x, int16_t y, uint8_t *bitmap, int16_t w, int16_t h);
   void drawGrayscaleBitmap(int16_t x, int16_t y, uint8_t *bitmap, uint8_t matte, int16_t w, int16_t h);
   void drawGrayscaleBitmap(int16_t x, int16_t y, bool *bitmap, int16_t w, int16_t h);
