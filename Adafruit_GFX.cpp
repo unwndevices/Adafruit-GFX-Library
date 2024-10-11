@@ -1082,24 +1082,6 @@ void Adafruit_GFX::drawGrayscaleBitmap(int16_t x, int16_t y,
   }
   endWrite();
 }
-void Adafruit_GFX::drawGrayscaleBitmap(int16_t x, int16_t y,
-                                       const uint8_t bitmap[], uint8_t matte, int16_t w,
-                                       int16_t h, uint8_t opacity)
-{
-  startWrite();
-  for (int16_t j = 0; j < h; j++, y++)
-  {
-    for (int16_t i = 0; i < w; i++)
-    {
-      uint8_t color = (uint8_t)pgm_read_byte(&bitmap[j * w + i]);
-      if (color != matte)
-      {
-        writePixel(x + i, y, color / opacity);
-      }
-    }
-  }
-  endWrite();
-}
 
 /**************************************************************************/
 /*!
@@ -1153,7 +1135,6 @@ void Adafruit_GFX::drawGrayscaleBitmap(int16_t x, int16_t y, uint8_t *bitmap, ui
   }
   endWrite();
 }
-
 
 /**************************************************************************/
 /*!
@@ -1859,7 +1840,6 @@ void Adafruit_GFX::getTextBounds(const char *str, int16_t x, int16_t y,
     @param    w      The boundary width, set by function
     @param    h      The boundary height, set by function
 */
-
 
 /**************************************************************************/
 /*!
@@ -2633,7 +2613,7 @@ void GFXcanvas8::fillScreen(uint16_t color)
   }
 }
 
-/*************************************************************************/
+/**************************************************************************/
 /*!
    @brief  Speed optimized vertical line drawing
    @param  x      Line horizontal start point
