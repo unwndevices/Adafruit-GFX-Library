@@ -39,6 +39,10 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <pgmspace.h>
 #endif
 
+#ifdef WINDOWS
+#include <iostream>
+#include <cstring>
+#endif
 // Many (but maybe not all) non-AVR board installs define macros
 // for compatibility with existing PROGMEM-reading AVR code.
 // Do our own checks and defines here for good measure...
@@ -90,6 +94,10 @@ inline uint8_t *pgm_read_bitmap_ptr(const GFXfont *gfxFont)
 
 #ifndef min
 #define min(a, b) (((a) < (b)) ? (a) : (b))
+#endif
+
+#ifndef max
+#define max(a, b) (((a) > (b)) ? (a) : (b))
 #endif
 
 #ifndef _swap_int16_t
@@ -1056,6 +1064,24 @@ void Adafruit_GFX::drawGrayscaleBitmap(int16_t x, int16_t y,
   }
   endWrite();
 }
+void Adafruit_GFX::drawGrayscaleBitmap(int16_t x, int16_t y,
+                                       const uint8_t bitmap[], uint8_t matte, int16_t w,
+                                       int16_t h, uint8_t opacity)
+{
+  startWrite();
+  for (int16_t j = 0; j < h; j++, y++)
+  {
+    for (int16_t i = 0; i < w; i++)
+    {
+      uint8_t color = (uint8_t)pgm_read_byte(&bitmap[j * w + i]);
+      if (color != matte)
+      {
+        writePixel(x + i, y, color / opacity);
+      }
+    }
+  }
+  endWrite();
+}
 
 /**************************************************************************/
 /*!
@@ -1109,6 +1135,7 @@ void Adafruit_GFX::drawGrayscaleBitmap(int16_t x, int16_t y, uint8_t *bitmap, ui
   }
   endWrite();
 }
+
 /**************************************************************************/
 /*!
    @brief   Draw a RAM-resident 8-bit image (grayscale) at the specified (x,y)
@@ -1195,7 +1222,10 @@ void Adafruit_GFX::drawGrayscaleBitmap(int16_t x, int16_t y,
         b = pgm_read_byte(&mask[j * bw + i / 8]);
       if (b & 0x80)
       {
-        writePixel(x + i, y, (uint8_t)pgm_read_byte(&bitmap[j * w + i]));
+        if (bitmap[j * w + i] != 16U)
+        {
+          writePixel(x + i, y, (uint8_t)pgm_read_byte(&bitmap[j * w + i]));
+        }
       }
     }
   }
@@ -1233,7 +1263,10 @@ void Adafruit_GFX::drawGrayscaleBitmap(int16_t x, int16_t y, uint8_t *bitmap,
         b = mask[j * bw + i / 8];
       if (b & 0x80)
       {
-        writePixel(x + i, y, bitmap[j * w + i]);
+        if (bitmap[j * w + i] != 16U)
+        {
+          writePixel(x + i, y, bitmap[j * w + i]);
+        }
       }
     }
   }
@@ -1807,56 +1840,6 @@ void Adafruit_GFX::getTextBounds(const char *str, int16_t x, int16_t y,
     @param    w      The boundary width, set by function
     @param    h      The boundary height, set by function
 */
-/**************************************************************************/
-void Adafruit_GFX::getTextBounds(const String &str, int16_t x, int16_t y,
-                                 int16_t *x1, int16_t *y1, uint16_t *w,
-                                 uint16_t *h)
-{
-  if (str.length() != 0)
-  {
-    getTextBounds(const_cast<char *>(str.c_str()), x, y, x1, y1, w, h);
-  }
-}
-
-/**************************************************************************/
-/*!
-    @brief    Helper to determine size of a PROGMEM string with current
-   font/size. Pass string and a cursor position, returns UL corner and W,H.
-    @param    str     The flash-memory ascii string to measure
-    @param    x       The current cursor X
-    @param    y       The current cursor Y
-    @param    x1      The boundary X coordinate, set by function
-    @param    y1      The boundary Y coordinate, set by function
-    @param    w      The boundary width, set by function
-    @param    h      The boundary height, set by function
-*/
-/**************************************************************************/
-void Adafruit_GFX::getTextBounds(const __FlashStringHelper *str, int16_t x,
-                                 int16_t y, int16_t *x1, int16_t *y1,
-                                 uint16_t *w, uint16_t *h)
-{
-  uint8_t *s = (uint8_t *)str, c;
-
-  *x1 = x;
-  *y1 = y;
-  *w = *h = 0;
-
-  int16_t minx = _width, miny = _height, maxx = -1, maxy = -1;
-
-  while ((c = pgm_read_byte(s++)))
-    charBounds(c, &x, &y, &minx, &miny, &maxx, &maxy);
-
-  if (maxx >= minx)
-  {
-    *x1 = minx;
-    *w = maxx - minx + 1;
-  }
-  if (maxy >= miny)
-  {
-    *y1 = miny;
-    *h = maxy - miny + 1;
-  }
-}
 
 /**************************************************************************/
 /*!
@@ -3152,6 +3135,9 @@ void GFXcanvas16::drawFastRawHLine(int16_t x, int16_t y, int16_t w,
 /**************************************************************************/
 // Custom Functions
 /**************************************************************************/
+/**************************************************************************/
+// Custom Functions
+/**************************************************************************/
 
 void GFXcanvas8::add(GFXcanvas8 *canvas, GFXcanvas8 *over)
 {
@@ -3160,6 +3146,15 @@ void GFXcanvas8::add(GFXcanvas8 *canvas, GFXcanvas8 *over)
   for (int i = 0; i < canvas->width() * canvas->width(); i++)
   {
     _canvas[i] = constrain(_canvas[i] + _over[i], 0, 15);
+  }
+}
+
+void GFXcanvas8::add(const uint8_t over[])
+{
+  uint8_t *_canvas = this->getBuffer();
+  for (int i = 0; i < this->width() * this->width(); i++)
+  {
+    _canvas[i] = constrain(_canvas[i] + over[i], 0, 15);
   }
 }
 
@@ -3172,6 +3167,49 @@ void GFXcanvas8::subtract(GFXcanvas8 *canvas, GFXcanvas8 *over)
     _canvas[i] = constrain(_canvas[i] - _over[i], 0, 15);
   }
 }
+
+void GFXcanvas8::subtract(const uint8_t over[])
+{
+  uint8_t *_canvas = this->getBuffer();
+  for (int i = 0; i < this->width() * this->width(); i++)
+  {
+    _canvas[i] = constrain(_canvas[i] - over[i], 0, 15);
+  }
+}
+
+void GFXcanvas8::difference(int16_t x, int16_t y, const uint8_t over[], int16_t w, int16_t h)
+{
+  uint8_t *_canvas = this->getBuffer();
+  int16_t canvas_width = this->width();
+  int16_t canvas_height = this->height();
+  // For each row
+  for (int16_t j = 0; j < h; j++)
+  {
+    int16_t yy = y + j;
+    // Skip rows outside canvas bounds
+    if (yy < 0 || yy >= canvas_height)
+      continue;
+
+    for (int16_t i = 0; i < w; i++)
+    {
+      int16_t xx = x + i;
+      // Skip pixels outside canvas bounds
+      if (xx < 0 || xx >= canvas_width)
+        continue;
+
+      // Calculate indices for both arrays
+      int16_t canvas_index = yy * canvas_width + xx;
+      int16_t over_index = j * w + i;
+
+      // Calculate the absolute difference between the canvas and overlay
+      int16_t diff = abs((int16_t)_canvas[canvas_index] - (int16_t)over[over_index]);
+
+      // Clamp the difference to the range 0-15
+      _canvas[canvas_index] = (uint8_t)min(15, diff);
+    }
+  }
+}
+
 void GFXcanvas8::over(GFXcanvas8 *canvas, GFXcanvas8 *over, uint8_t matte)
 {
   uint8_t *_canvas = canvas->getBuffer();

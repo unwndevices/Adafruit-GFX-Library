@@ -1,4 +1,8 @@
-const uint8_t VGATypewriter8pt7bBitmaps[] PROGMEM = {
+#ifndef VGATYPEWRITER
+#define VGATYPEWRITER
+#include "Adafruit_GFX.h"
+
+const uint8_t VGATypewriter8pt7bBitmaps[] = {
     0x00, 0xFF, 0xFC, 0xC0, 0xDE, 0xE4, 0x6C, 0xDB, 0xFB, 0x6F, 0xED, 0x9B,
     0x00, 0x31, 0xEC, 0xF0, 0x78, 0x3C, 0xDE, 0x30, 0x0C, 0xCC, 0xCC, 0x18,
     0x18, 0x18, 0x33, 0x33, 0x30, 0x78, 0x66, 0x33, 0x19, 0x87, 0x96, 0x6B,
@@ -47,7 +51,7 @@ const uint8_t VGATypewriter8pt7bBitmaps[] PROGMEM = {
     0xCC, 0xCC, 0x7C, 0x36, 0x66, 0xC6, 0x66, 0x30, 0xFF, 0xFF, 0xC0, 0xC6,
     0x66, 0x36, 0x66, 0xC0, 0x6F, 0x60};
 
-const GFXglyph VGATypewriter8pt7bGlyphs[] PROGMEM = {
+const GFXglyph VGATypewriter8pt7bGlyphs[] = {
     {0, 1, 1, 5, 0, 0},      // 0x20 ' '
     {1, 2, 9, 3, 0, -8},     // 0x21 '!'
     {4, 5, 3, 6, 0, -8},     // 0x22 '"'
@@ -144,9 +148,11 @@ const GFXglyph VGATypewriter8pt7bGlyphs[] PROGMEM = {
     {551, 4, 9, 5, 0, -8},   // 0x7D '}'
     {556, 6, 2, 7, 0, -3}};  // 0x7E '~'
 
-const GFXfont VGATypewriter8pt7b PROGMEM = {
+const GFXfont VGATypewriter8pt7b = {
     (uint8_t *)VGATypewriter8pt7bBitmaps,
     (GFXglyph *)VGATypewriter8pt7bGlyphs,
     0x20, 0x7E, 15};
 
 // Approx. 1230 bytes
+
+#endif // VGATYPEWRITER
