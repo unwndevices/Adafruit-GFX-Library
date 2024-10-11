@@ -14,7 +14,7 @@
 #include <Adafruit_SPIDevice.h>
 #else
 #include "ArduinoSubstitute.hpp"
-#include <math.h>
+#include <cmath>
 #endif // !WINDOWS
 #include "gfxfont.h"
 
