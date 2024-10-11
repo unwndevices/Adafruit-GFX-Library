@@ -80,6 +80,7 @@ public:
   void fillCircle(int16_t x0, int16_t y0, int16_t r, uint16_t color);
   void fillCircleHelper(int16_t x0, int16_t y0, int16_t r, uint8_t cornername,
                         int16_t delta, uint16_t color);
+
   void drawTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2,
                     int16_t y2, uint16_t color);
   void fillTriangle(int16_t x0, int16_t y0, int16_t x1, int16_t y1, int16_t x2,
@@ -125,8 +126,7 @@ public:
                 uint16_t bg, uint8_t size);
   void drawChar(int16_t x, int16_t y, unsigned char c, uint16_t color,
                 uint16_t bg, uint8_t size_x, uint8_t size_y);
-  void getTextBounds(const char *string, int16_t x, int16_t y, int16_t *x1,
-                     int16_t *y1, uint16_t *w, uint16_t *h);
+  void getTextBounds(const char *string, int16_t x, int16_t y, int16_t *x1, int16_t *y1, uint16_t *w, uint16_t *h);
   void setTextSize(uint8_t s);
   void setTextSize(uint8_t sx, uint8_t sy);
   void setFont(const GFXfont *f = NULL);
@@ -392,7 +392,7 @@ private:
 #ifdef __AVR__
   // Bitmask tables of 0x80>>X and ~(0x80>>X), because X>>Y is slow on AVR
   static const uint8_t PROGMEM GFXsetBit[], GFXclrBit[];
-#endif
+#endif // ADAFRUIT_GFX_H
 };
 
 /// A GFX 8-bit canvas context for graphics
@@ -456,4 +456,4 @@ protected:
   uint16_t *buffer; ///< Raster data: no longer private, allow subclass access
 };
 
-#endif // _ADAFRUIT_GFX_H
+#endif // ADAFRUIT_GFX_H
