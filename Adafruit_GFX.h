@@ -131,6 +131,7 @@ public:
   void setTextSize(uint8_t sx, uint8_t sy);
   void setFont(const GFXfont *f = NULL);
 
+  uint16_t getTextWidth(const char *string);
   /**********************************************************************/
   /*!
     @brief  Set text cursor location

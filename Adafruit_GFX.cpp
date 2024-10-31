@@ -3246,3 +3246,11 @@ void GFXcanvas8::over(GFXcanvas8 *canvas, GFXcanvas8 *over, uint8_t matte)
     }
   }
 }
+
+uint16_t Adafruit_GFX::getTextWidth(const char *string)
+{
+  int16_t x1, y1 = 0;
+  uint16_t w, h = 0;
+  getTextBounds(string, 0, 0, &x1, &y1, &w, &h);
+  return w;
+}
