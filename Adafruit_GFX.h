@@ -1,16 +1,22 @@
 #ifndef _ADAFRUIT_GFX_H
 #define _ADAFRUIT_GFX_H
+//#define WINDOWS
 
+#ifndef WINDOWS
 #if ARDUINO >= 100
 #include "Arduino.h"
 #include "Print.h"
 #else
 #include "WProgram.h"
 #endif
-#include "gfxfont.h"
 
 #include <Adafruit_I2CDevice.h>
 #include <Adafruit_SPIDevice.h>
+#else
+#include "ArduinoSubstitute.hpp"
+#include <cmath>
+#endif // !WINDOWS
+#include "gfxfont.h"
 
 /// A generic graphics superclass that can handle all sorts of drawing. At a
 /// minimum you can subclass and provide drawPixel(). At a maximum you can do a
@@ -96,13 +102,17 @@ public:
   void drawGrayscaleBitmap(int16_t x, int16_t y, const bool bitmap[], bool matte, int16_t w, int16_t h);
   void drawGrayscaleBitmap(int16_t x, int16_t y, const uint8_t bitmap[], int16_t w, int16_t h);
   void drawGrayscaleBitmap(int16_t x, int16_t y, const uint8_t bitmap[], uint8_t matte, int16_t w, int16_t h);
+  void drawGrayscaleBitmap(int16_t x, int16_t y, const uint8_t bitmap[], uint8_t matte, int16_t w, int16_t h, uint8_t opacity);
   void drawGrayscaleBitmap(int16_t x, int16_t y, uint8_t *bitmap, int16_t w, int16_t h);
   void drawGrayscaleBitmap(int16_t x, int16_t y, uint8_t *bitmap, uint8_t matte, int16_t w, int16_t h);
+  void drawGrayscaleBitmap(int16_t x, int16_t y, bool *bitmap, int16_t w, int16_t h);
+  void drawGrayscaleBitmap(int16_t x, int16_t y, bool *bitmap, uint8_t matte, int16_t w, int16_t h);
 
   void drawGrayscaleBitmap(int16_t x, int16_t y, const uint8_t bitmap[],
                            const uint8_t mask[], int16_t w, int16_t h);
   void drawGrayscaleBitmap(int16_t x, int16_t y, uint8_t *bitmap, uint8_t *mask,
                            int16_t w, int16_t h);
+
   void drawRGBBitmap(int16_t x, int16_t y, const uint16_t bitmap[], int16_t w,
                      int16_t h);
   void drawRGBBitmap(int16_t x, int16_t y, uint16_t *bitmap, int16_t w,
@@ -117,14 +127,11 @@ public:
                 uint16_t bg, uint8_t size_x, uint8_t size_y);
   void getTextBounds(const char *string, int16_t x, int16_t y, int16_t *x1,
                      int16_t *y1, uint16_t *w, uint16_t *h);
-  void getTextBounds(const __FlashStringHelper *s, int16_t x, int16_t y,
-                     int16_t *x1, int16_t *y1, uint16_t *w, uint16_t *h);
-  void getTextBounds(const String &str, int16_t x, int16_t y, int16_t *x1,
-                     int16_t *y1, uint16_t *w, uint16_t *h);
   void setTextSize(uint8_t s);
   void setTextSize(uint8_t sx, uint8_t sy);
   void setFont(const GFXfont *f = NULL);
 
+  uint16_t getTextWidth(const char *string);
   /**********************************************************************/
   /*!
     @brief  Set text cursor location
@@ -187,11 +194,8 @@ public:
   void cp437(bool x = true) { _cp437 = x; }
 
   using Print::write;
-#if ARDUINO >= 100
-  virtual size_t write(uint8_t);
-#else
-  virtual void write(uint8_t);
-#endif
+
+  virtual size_t write(uint8_t c) override;
 
   /************************************************************************/
   /*!
@@ -234,6 +238,52 @@ public:
   */
   /************************************************************************/
   int16_t getCursorY(void) const { return cursor_y; };
+
+  ///////////////////////////////////////////////////////////////////////////////
+
+  void fillRectWithPattern(int16_t x, int16_t y, int16_t w, int16_t h, uint8_t *pattern, int16_t patternWidth, int16_t patternHeight)
+  {
+    for (int16_t i = 0; i < w; i++)
+    {
+      for (int16_t j = 0; j < h; j++)
+      {
+        // Calculate the corresponding pixel in the pattern
+        int16_t patternX = i % patternWidth;
+        int16_t patternY = j % patternHeight;
+
+        // Get the color from the pattern
+        uint8_t color = pattern[patternY * patternWidth + patternX];
+
+        // Draw the pixel
+        drawPixel(x + i, y + j, color);
+      }
+    }
+  }
+
+  void drawDottedLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color, uint16_t dotLength = 1, uint16_t spaceLength = 1)
+  {
+    float dx = x1 - x0;
+    float dy = y1 - y0;
+    float len = std::sqrt(dx * dx + dy * dy);
+    float dotSpaceLength = dotLength + spaceLength;
+
+    // Normalize differences
+    dx /= len;
+    dy /= len;
+
+    for (uint16_t i = 0; i < len; i += dotSpaceLength)
+    {
+      for (uint16_t j = 0; j < dotLength; j++)
+      {
+        if (i + j >= len)
+          break; // If the dot is not complete
+
+        int16_t x = x0 + dx * (i + j);
+        int16_t y = y0 + dy * (i + j);
+        drawPixel(x, y, color);
+      }
+    }
+  }
 
 protected:
   void charBounds(unsigned char c, int16_t *x, int16_t *y, int16_t *minx,
@@ -320,10 +370,10 @@ class GFXcanvas1 : public Adafruit_GFX
 public:
   GFXcanvas1(uint16_t w, uint16_t h);
   ~GFXcanvas1(void);
-  void drawPixel(int16_t x, int16_t y, uint16_t color);
-  void fillScreen(uint16_t color);
-  void drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
-  void drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
+  void drawPixel(int16_t x, int16_t y, uint16_t color) override;
+  void fillScreen(uint16_t color) override;
+  void drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color) override;
+  void drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color) override;
   bool getPixel(int16_t x, int16_t y) const;
   /**********************************************************************/
   /*!
@@ -352,10 +402,10 @@ class GFXcanvas8 : public Adafruit_GFX
 public:
   GFXcanvas8(uint16_t w, uint16_t h);
   ~GFXcanvas8(void);
-  void drawPixel(int16_t x, int16_t y, uint16_t color);
-  void fillScreen(uint16_t color);
-  void drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
-  void drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
+  void drawPixel(int16_t x, int16_t y, uint16_t color) override;
+  void fillScreen(uint16_t color) override;
+  void drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color) override;
+  void drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color) override;
   uint8_t getPixel(int16_t x, int16_t y) const;
   /**********************************************************************/
   /*!
@@ -366,8 +416,12 @@ public:
   uint8_t *getBuffer(void) const { return buffer; }
 
   void add(GFXcanvas8 *canvas, GFXcanvas8 *over);
+  void add(const uint8_t over[]);
   void subtract(GFXcanvas8 *canvas, GFXcanvas8 *over);
+  void subtract(const uint8_t over[]);
   void over(GFXcanvas8 *canvas, GFXcanvas8 *over, uint8_t matte = 0);
+  void over(const uint8_t over[], uint8_t matte = 16U);
+  void difference(int16_t x, int16_t y, const uint8_t over[], int16_t w, int16_t h);
 
 protected:
   uint8_t getRawPixel(int16_t x, int16_t y) const;
@@ -382,11 +436,11 @@ class GFXcanvas16 : public Adafruit_GFX
 public:
   GFXcanvas16(uint16_t w, uint16_t h);
   ~GFXcanvas16(void);
-  void drawPixel(int16_t x, int16_t y, uint16_t color);
-  void fillScreen(uint16_t color);
+  void drawPixel(int16_t x, int16_t y, uint16_t color) override;
+  void fillScreen(uint16_t color) override;
   void byteSwap(void);
-  void drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color);
-  void drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color);
+  void drawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color) override;
+  void drawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color) override;
   uint16_t getPixel(int16_t x, int16_t y) const;
   /**********************************************************************/
   /*!
